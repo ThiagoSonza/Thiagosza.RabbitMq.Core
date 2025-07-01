@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Thiagosza.RabbitMq.Core</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+    <PackageId>Thiagosza.RabbitMq.Core</PackageId>
+    <Title>Thiagosza.RabbitMq.Core</Title>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <Authors>Thiago Sonza</Authors>
+    <Company>Thiago Sonza Tech</Company>
+    <Description>
+      Biblioteca de abstração para mensageria com RabbitMQ em .NET. Permite consumir e publicar mensagens com configuração fluente, 
+      resolução automática de filas por tipo, retry com backoff exponencial e inspirado no padrão do MassTransit.
+    </Description>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <ProjectUrl>https://github.com/thiagosonza/Thiagosza.RabbitMq.Core</ProjectUrl>
+    <RepositoryUrl>https://github.com/thiagosonza/Thiagosza.RabbitMq.Core</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <PackageTags>RabbitMQ;mensageria;message bus;queue;worker;background service;dotnet;aspnet;pubsub;event-driven;consumer;producer;retry</PackageTags>
+
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright © 2025 Thiago Sonza</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.6" />
+    <PackageReference Include="Polly" Version="8.6.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+    <PackageReference Include="System.Text.Json" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
+  </ItemGroup>
+</Project>

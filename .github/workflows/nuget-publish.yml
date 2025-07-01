@@ -1,0 +1,31 @@
+﻿name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - 'v*' # Ex: v1.0.0
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do reposit�rio
+      uses: actions/checkout@v3
+
+    - name: Setup do .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.x'
+
+    - name: Restore das depend�ncias
+      run: dotnet restore
+
+    - name: Build em Release
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Pack do NuGet
+      run: dotnet pack --configuration Release --no-build --output ./nupkg
+
+    - name: Publicar no NuGet
+      run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
