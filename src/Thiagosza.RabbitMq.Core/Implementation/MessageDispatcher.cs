@@ -1,28 +1,26 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Thiagosza.RabbitMq.Core.Interfaces;
 
 namespace Thiagosza.RabbitMq.Core.Implementation
 {
     internal class MessageDispatcher
     {
-        private const string METHOD = "HandleAsync";        
+        private const string METHOD = "HandleAsync";
 
         private readonly IServiceProvider _provider;
-        private readonly MessageHandlerRegistry _registry;
         private readonly ILogger<MessageDispatcher> _logger;
 
         public MessageDispatcher(
-            IServiceProvider provider, 
-            MessageHandlerRegistry registry, 
+            IServiceProvider provider,
             ILogger<MessageDispatcher> logger)
         {
             _provider = provider;
-            _registry = registry;
             _logger = logger;
         }
 
@@ -35,29 +33,27 @@ namespace Thiagosza.RabbitMq.Core.Implementation
         /// <param name="messageJson">The JSON representation of the message to dispatch.</param>
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task DispatchAsync(string messageType, string messageJson, CancellationToken cancellationToken)
+        public async Task DispatchAsync(Type handlerType, string messageJson, CancellationToken cancellationToken)
         {
-            var type = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .FirstOrDefault(t => t.AssemblyQualifiedName == messageType || t.FullName == messageType || t.Name == messageType);
-
-            if (type is null)
+            var handler = _provider.GetService(handlerType);
+            if (handler is null)
             {
-                _logger.LogWarning("Tipo {Type} não encontrado", messageType);
+                _logger.LogError("Handler not injected for type: {handlerName}", handlerType.Name);
                 return;
             }
 
-            var handlerType = _registry.GetHandlerType(type);
-            if (handlerType == null)
-            {
-                _logger.LogWarning("Handler para o tipo {Type} não encontrado", type.Name);
-                return;
-            }
-
-            var handler = _provider.GetRequiredService(handlerType);
-            var message = JsonSerializer.Deserialize(messageJson, type);
             var method = handlerType.GetMethod(METHOD);
             if (method == null) return;
+
+            var interfaceType = handlerType
+                .GetInterfaces()
+                .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>));
+
+            var genericType = interfaceType.GetGenericArguments().First();
+            _logger.LogDebug("Handler: {handlerName}, Interface: {interfaceName}, Generic: {genericName}", handlerType.Name, interfaceType.Name, genericType.Name);
+
+            var json = JsonNode.Parse(messageJson)?.AsObject()!;
+            var message = json["Payload"].Deserialize(genericType);
 
             var retryPolicy = MessageDispatcherPolicy.GetPolicy(cancellationToken);
             await retryPolicy.ExecuteAsync(async () => await (Task)(method.Invoke(handler, new[] { message!, cancellationToken }) ?? Task.CompletedTask));

@@ -33,15 +33,16 @@ namespace Thiagosza.RabbitMq.Core.Implementation
         public async Task PublishAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default)
         {
             var messageType = typeof(TMessage);
-            var queueName = _options.ProducerBindings.FirstOrDefault(q => q.ProducerType == messageType).QueueName 
+            var queueName = _options.ProducerBindings.FirstOrDefault(q => q.ProducerType == messageType).QueueName
                 ?? throw new InvalidOperationException($"Fila não configurada para o tipo de mensagem {messageType.FullName}");
-            
+
             using var connection = await _factory.CreateConnectionAsync(cancellationToken);
             using var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
             await channel.QueueDeclareAsync(queueName, durable: true, exclusive: false, autoDelete: false);
 
-            var json = JsonSerializer.Serialize(message);
+            var messageWrapped = MessageWrapper<TMessage>.Create(message);
+            var json = JsonSerializer.Serialize(messageWrapped);
             var body = Encoding.UTF8.GetBytes(json);
 
             var props = new BasicProperties

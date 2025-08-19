@@ -7,9 +7,13 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.1.0] - 2025-08-19
+
+- Atualiza a implementação do RabbitMq introduzindo a classe MessageWrapper para encapsular mensagens.
+- Ajuste na lógica de publicação e despacho de mensagens
+
 ## [1.0.0] - 2025-06-26
 
-### Adicionado
 - Suporte a consumo de mensagens via `IMessageHandler<T>`
 - Registro automático de consumers com fila nomeada
 - Registro de producers com resolução automática de fila via tipo da mensagem
@@ -26,4 +30,5 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [Unreleased]
 
 ### Planejado
+
 - Fallback de mensagens com falha permanente para fila morta

@@ -54,7 +54,7 @@ namespace Thiagosza.RabbitMq.Core.Implementation
                         return;
                     }
 
-                    await _dispatcher.DispatchAsync(messageType, json, cancellationToken);
+                    await _dispatcher.DispatchAsync(consumerType, json, cancellationToken);
                 };
 
                 await channel!.BasicConsumeAsync(queueName, autoAck: true, consumer: consumer);
@@ -64,7 +64,7 @@ namespace Thiagosza.RabbitMq.Core.Implementation
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             var channelsOpen = _channels.Where(q => q.IsOpen).ToList();
-            foreach(var channel in channelsOpen)
+            foreach (var channel in channelsOpen)
                 await channel.CloseAsync(cancellationToken: cancellationToken);
 
             if (_connection != null && _connection.IsOpen)
